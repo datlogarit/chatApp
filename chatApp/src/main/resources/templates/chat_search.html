@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat + Tìm bạn</title>
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+    <style>
+        .top-right-search {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 6px 10px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+            z-index: 5;
+        }
+
+        .top-right-search input {
+            border: none;
+            outline: none;
+            width: 220px;
+        }
+
+        .top-right-search button {
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 44px;
+            right: 12px;
+            width: 320px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: none;
+            z-index: 6;
+        }
+
+        .search-suggestions ul {
+            list-style: none;
+            margin: 0;
+            padding: 6px;
+            max-height: 280px;
+            overflow: auto;
+        }
+
+        .search-suggestions li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .search-suggestions li:hover {
+            background: #f5f5f5;
+        }
+
+        .suggest-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e8f0fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #1a73e8;
+        }
+
+        .suggest-name {
+            font-weight: 600;
+        }
+
+        .chat-layout {
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-layout">
+        <!-- Sidebar: Danh sách người dùng -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Tin nhắn</div>
+            </div>
+            <div class="search-box">
+                <input class="search-input" type="text" placeholder="Tìm kiếm trên Messenger" />
+            </div>
+            <ul class="user-list">
+                <li class="user-item active">
+                    <div class="avatar">A</div>
+                    <div class="user-meta">
+                        <div class="user-name">An Nguyen</div>
+                        <div class="user-last">Bạn: Hẹn gặp lại nhé!</div>
+                    </div>
+                    <div class="user-time">09:41</div>
+                </li>
+                <li class="user-item">
+                    <div class="avatar">B</div>
+                    <div class="user-meta">
+                        <div class="user-name">Binh Pham</div>
+                        <div class="user-last">Đã nhận được file</div>
+                    </div>
+                    <div class="user-time">Hôm nay</div>
+                </li>
+                <li class="user-item">
+                    <div class="avatar">C</div>
+                    <div class="user-meta">
+                        <div class="user-name">Chi Tran</div>
+                        <div class="user-last">Ok nhé</div>
+                    </div>
+                    <div class="user-time">Hôm qua</div>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Khung chat -->
+        <main class="chat-panel">
+            <header class="chat-header">
+                <div class="avatar">A</div>
+                <div>
+                    <div class="chat-title">An Nguyen</div>
+                    <div style="font-size:12px;color:#9aa0a6;">Đang hoạt động</div>
+                </div>
+            </header>
+
+            <!-- Ô tìm bạn góc trên -->
+            <div class="top-right-search">
+                <input id="friendSearchInput" type="text" placeholder="Tìm bạn để chat..." autocomplete="off" />
+                <button id="friendSearchBtn" type="button">Tìm</button>
+            </div>
+            <div id="searchSuggestions" class="search-suggestions">
+                <ul id="suggestList"></ul>
+            </div>
+
+            <section id="messages" class="messages">
+                <div class="message other">
+                    <div class="bubble">Chào bạn!</div>
+                    <div class="time">09:40</div>
+                </div>
+                <div class="message me">
+                    <div class="bubble">Xin chào, hôm nay bạn thế nào?</div>
+                    <div class="time">09:41</div>
+                </div>
+            </section>
+
+            <footer class="chat-input">
+                <form id="messageForm" class="message-form">
+                    <input id="messageInput" class="message-input" type="text" placeholder="Nhập tin nhắn..."
+                        autocomplete="off" />
+                    <button class="send-btn" type="submit">Gửi</button>
+                </form>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Demo danh sách bạn bè giả lập; sau có thể thay bằng fetch API
+        const MOCK_FRIENDS = [
+            { id: 1, name: 'An Nguyen' },
+            { id: 2, name: 'Binh Pham' },
+            { id: 3, name: 'Chi Tran' },
+            { id: 4, name: 'Dung Le' },
+            { id: 5, name: 'Hai Vo' },
+            { id: 6, name: 'Linh Do' },
+            { id: 7, name: 'Phuong Nguyen' },
+        ];
+
+        function renderSuggestions(keyword) {
+            const suggestBox = document.getElementById('searchSuggestions');
+            const list = document.getElementById('suggestList');
+            const value = (keyword || '').trim().toLowerCase();
+            list.innerHTML = '';
+            if (!value) {
+                suggestBox.style.display = 'none';
+                return;
+            }
+            const results = MOCK_FRIENDS.filter(f => f.name.toLowerCase().includes(value)).slice(0, 10);
+            if (results.length === 0) {
+                suggestBox.style.display = 'none';
+                return;
+            }
+            for (const friend of results) {
+                const li = document.createElement('li');
+                const ava = document.createElement('div');
+                ava.className = 'suggest-avatar';
+                ava.textContent = friend.name.charAt(0).toUpperCase();
+                const info = document.createElement('div');
+                const name = document.createElement('div');
+                name.className = 'suggest-name';
+                name.textContent = friend.name;
+                info.appendChild(name);
+                li.appendChild(ava);
+                li.appendChild(info);
+                li.addEventListener('click', () => startChatWith(friend));
+                list.appendChild(li);
+            }
+            suggestBox.style.display = 'block';
+        }
+
+        function startChatWith(friend) {
+            // Demo: khi chọn bạn, đổi tiêu đề và thêm một tin nhắn hệ thống
+            document.querySelector('.chat-title').textContent = friend.name;
+            const messages = document.getElementById('messages');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message other';
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.textContent = `Đã bắt đầu cuộc trò chuyện với ${friend.name}`;
+            const time = document.createElement('div');
+            time.className = 'time';
+            time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            wrapper.appendChild(bubble);
+            wrapper.appendChild(time);
+            messages.appendChild(wrapper);
+            // Ẩn gợi ý
+            document.getElementById('searchSuggestions').style.display = 'none';
+            document.getElementById('friendSearchInput').value = '';
+            scrollToBottom();
+        }
+
+        // Tự động cuộn cuối danh sách tin nhắn
+        function scrollToBottom() {
+            const list = document.getElementById('messages');
+            list.scrollTop = list.scrollHeight;
+        }
+        scrollToBottom();
+
+        // Gửi tin nhắn demo
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const messages = document.getElementById('messages');
+        messageForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text) return;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message me';
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.textContent = text;
+            const time = document.createElement('div');
+            time.className = 'time';
+            time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            wrapper.appendChild(bubble);
+            wrapper.appendChild(time);
+            messages.appendChild(wrapper);
+            messageInput.value = '';
+            scrollToBottom();
+        });
+
+        // Xử lý tìm kiếm bạn ở góc trên
+        const friendSearchInput = document.getElementById('friendSearchInput');
+        const friendSearchBtn = document.getElementById('friendSearchBtn');
+        friendSearchInput.addEventListener('input', (e) => renderSuggestions(e.target.value));
+        friendSearchBtn.addEventListener('click', () => renderSuggestions(friendSearchInput.value));
+        document.addEventListener('click', (e) => {
+            const box = document.getElementById('searchSuggestions');
+            const container = document.querySelector('.top-right-search');
+            if (!box.contains(e.target) && !container.contains(e.target)) {
+                box.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>

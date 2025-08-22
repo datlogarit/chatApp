@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+</head>
+
+<body>
+    <div class="chat-layout">
+        <!-- Sidebar: Danh sách người dùng -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Tin nhắn</div>
+            </div>
+            <div class="search-box">
+                <input class="search-input" type="text" placeholder="Tìm kiếm trên Messenger" />
+            </div>
+            <ul class="user-list">
+                <!-- Ví dụ dữ liệu tĩnh; sau có thể bind từ server -->
+                <li class="user-item active">
+                    <div class="avatar">A</div>
+                    <div class="user-meta">
+                        <div class="user-name">An Nguyen</div>
+                        <div class="user-last">Bạn: Hẹn gặp lại nhé!</div>
+                    </div>
+                    <div class="user-time">09:41</div>
+                </li>
+                <li class="user-item">
+                    <div class="avatar">B</div>
+                    <div class="user-meta">
+                        <div class="user-name">Binh Pham</div>
+                        <div class="user-last">Đã nhận được file</div>
+                    </div>
+                    <div class="user-time">Hôm nay</div>
+                </li>
+                <li class="user-item">
+                    <div class="avatar">C</div>
+                    <div class="user-meta">
+                        <div class="user-name">Chi Tran</div>
+                        <div class="user-last">Ok nhé</div>
+                    </div>
+                    <div class="user-time">Hôm qua</div>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Khung chat -->
+        <main class="chat-panel">
+            <header class="chat-header">
+                <div class="avatar">A</div>
+                <div>
+                    <div class="chat-title">An Nguyen</div>
+                    <div style="font-size:12px;color:#9aa0a6;">Đang hoạt động</div>
+                </div>
+            </header>
+
+            <section id="messages" class="messages">
+                <!-- Tin nhắn mẫu -->
+                <div class="message other">
+                    <div class="bubble">Chào bạn!</div>
+                    <div class="time">09:40</div>
+                </div>
+                <div class="message me">
+                    <div class="bubble">Xin chào, hôm nay bạn thế nào?</div>
+                    <div class="time">09:41</div>
+                </div>
+            </section>
+
+            <footer class="chat-input">
+                <form id="messageForm" class="message-form">
+                    <input id="messageInput" class="message-input" type="text" placeholder="Nhập tin nhắn..."
+                        autocomplete="off" />
+                    <button class="send-btn" type="submit">Gửi</button>
+                </form>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Tự động cuộn xuống cuối vùng tin nhắn
+        function scrollToBottom() {
+            const list = document.getElementById('messages');
+            list.scrollTop = list.scrollHeight;
+        }
+        scrollToBottom();
+
+        // Xử lý gửi tin nhắn giả lập (frontend-only)
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const messages = document.getElementById('messages');
+
+        messageForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message me';
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.textContent = text;
+            const time = document.createElement('div');
+            time.className = 'time';
+            time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            wrapper.appendChild(bubble);
+            wrapper.appendChild(time);
+            messages.appendChild(wrapper);
+
+            messageInput.value = '';
+            scrollToBottom();
+        });
+    </script>
+</body>
+
+</html>

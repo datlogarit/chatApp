@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Đăng nhập - Chat App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+    <!-- Notyf CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="logo">💬</div>
+        <h1 class="subtitle">Chào mừng bạn trở lại!</h1>
+
+        <!-- Thông báo lỗi hoặc thành công -->
+        <div th:if="${param.error}" class="alert alert-error">
+            Tên đăng nhập hoặc mật khẩu không chính xác!
+        </div>
+        <div th:if="${param.logout}" class="alert alert-success">
+            Đăng xuất thành công!
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label for="username">Tên đăng nhập</label>
+                <div class="input-icon username-input">
+                    <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <div class="input-icon password-input">
+                    <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required />
+                </div>
+            </div>
+
+            <button type="submit" class="auth-btn">Đăng nhập</button>
+        </form>
+
+        <div class="auth-link">
+            <p>Chưa có tài khoản?</p>
+            <a th:href="@{/register}">Đăng ký ngay</a>
+        </div>
+    </div>
+
+    <!-- Notyf JS -->
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+</body>
+
+</html>
