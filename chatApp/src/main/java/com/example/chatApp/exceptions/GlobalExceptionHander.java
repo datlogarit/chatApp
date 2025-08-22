@@ -19,4 +19,10 @@ public class GlobalExceptionHander {
         model.addAttribute("errorMsg", ex.getMessage());
         return "login";
     }
+
+    @ExceptionHandler(ConversationNotFoundException.class)
+    public String handConversationNotFoundException(ConversationNotFoundException ex, Model model) {
+        model.addAttribute("errorMsg", ex.getMessage());
+        return "conversation";
+    }
 }
