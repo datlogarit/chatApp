@@ -23,30 +23,18 @@
                 <input class="search-input" type="text" placeholder="Tìm kiếm trên Messenger" />
             </div>
             <ul class="user-list">
+                <li th:if="${#lists.isEmpty(conversations)}" class="no-data">
+                    Bạn chưa có cuộc trò chuyện nào.
+                </li>
                 <!-- Ví dụ dữ liệu tĩnh; sau có thể bind từ server -->
-                <li class="user-item active">
-                    <div class="avatar">A</div>
+                <li th:unless="${#lists.isEmpty(conversations)}" class="user-item" th:each="c : ${conversations}"
+                    th:object="${c}">
+                    <div class="avatar" th:text="*{partnerUsername.substring(0,1).toUpperCase()}">A</div>
                     <div class="user-meta">
-                        <div class="user-name">An Nguyen</div>
-                        <div class="user-last">Bạn: Hẹn gặp lại nhé!</div>
+                        <div class="user-name" th:text="*{partnerUsername}">Tên</div>
+                        <div class="user-last" th:text="*{lastMessage}">Last message</div>
                     </div>
-                    <div class="user-time">09:41</div>
-                </li>
-                <li class="user-item">
-                    <div class="avatar">B</div>
-                    <div class="user-meta">
-                        <div class="user-name">Binh Pham</div>
-                        <div class="user-last">Đã nhận được file</div>
-                    </div>
-                    <div class="user-time">Hôm nay</div>
-                </li>
-                <li class="user-item">
-                    <div class="avatar">C</div>
-                    <div class="user-meta">
-                        <div class="user-name">Chi Tran</div>
-                        <div class="user-last">Ok nhé</div>
-                    </div>
-                    <div class="user-time">Hôm qua</div>
+                    <div class="user-time" th:text="*{#temporals.format(lastMessageTime, 'HH:mm dd/MM')}">Time</div>
                 </li>
             </ul>
         </aside>

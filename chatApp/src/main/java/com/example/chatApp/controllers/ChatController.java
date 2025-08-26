@@ -1,10 +1,15 @@
 package com.example.chatApp.controllers;
 
+import java.util.List;
+
+import com.example.chatApp.DTOs.ConversationListDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.example.chatApp.repositories.ConversationRepository;
+import com.example.chatApp.models.MemberOfConversation;
+
+import com.example.chatApp.services.ListConversationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,7 +18,7 @@ import org.springframework.ui.Model;
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
-    private final ConversationRepository conversationRepository;
+    private final ListConversationService conversationService;
 
     @GetMapping("/chat")
     public String chatPage() {
@@ -28,11 +33,11 @@ public class ChatController {
         return "chat_conversation";
     }
 
-    @GetMapping("chat/{userId}")
+    @GetMapping("/chat/user/{userId}")
     public String chatList(@PathVariable("userId") Integer userId, Model model) {
-        conversationRepository.findConversationByUserId(userId);
-        // Placeholder: thêm logic để lấy dữ liệu chat từ userId; sau sẽ bind từ service
-        // model.addAttribute("chatData", chatService.getChatData(userId));
-        return "chat_user";
+        List<ConversationListDTO> conversations = conversationService.getListConversations(userId);
+        // láy đc hết thông tin của trang listConversation ở đây để truyền vào cho view
+        model.addAttribute("conversations", conversations);
+        return "chat";
     }
 }

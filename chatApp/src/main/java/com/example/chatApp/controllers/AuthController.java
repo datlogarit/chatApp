@@ -2,7 +2,7 @@ package com.example.chatApp.controllers;
 
 import com.example.chatApp.DTOs.UserDTO;
 import com.example.chatApp.models.Users;
-import com.example.chatApp.services.UserService;
+import com.example.chatApp.services.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 // @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
+    private final AuthService userService;
 
     @GetMapping("/login")
     public String loginPage() {

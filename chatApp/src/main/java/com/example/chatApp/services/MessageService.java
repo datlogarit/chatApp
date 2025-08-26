@@ -1,5 +1,5 @@
 package com.example.chatApp.services;
 
-public class ChatPageService {
+public class MessageService {
 
 }

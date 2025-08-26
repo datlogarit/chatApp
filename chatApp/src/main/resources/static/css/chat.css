@@ -212,6 +212,12 @@ body {
     filter: brightness(0.95);
 }
 
+.no-data {
+    margin-top: 70px;
+    text-align: center;
+    font-size: 18px;
+}
+
 /* Small screens */
 @media (max-width: 900px) {
     .sidebar {
