@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
 
-<body>
+<body th:data-user-id="${userId}">
     <div class="chat-layout">
         <!-- Sidebar: Danh sách người dùng -->
         <aside id="sidebar">
@@ -115,6 +115,8 @@
 
     <script>
         let conversationId = null;
+        let userId = document.querySelector("body").getAttribute("data-user-id");
+
         // const chatPanel = document.getElementById("chat-panel");
         const sidebar = document.getElementById("sidebar");
         const messageContainer = document.getElementById("message-container");
@@ -144,7 +146,7 @@
                     <section id="messages" class="messages">
                     `;
                     messagesJson.forEach(message => {
-                        const isMyMessage = message.sendBy.id === message.conversationId.roomOwner.id;
+                        const isMyMessage = message.sendBy.id == userId;
                         const messageClass = isMyMessage ? 'me' : 'other';
 
                         // Format thời gian tin nhắn
@@ -210,7 +212,7 @@
             if (!messages) return; // chưa mở phòng chat nào
 
             const wrapper = document.createElement("div");
-            wrapper.className = msg.sender === "me" ? "message me" : "message other";
+            wrapper.className = msg.sendBy.id == userId ? "message me" : "message other";
 
             const bubble = document.createElement("div");
             bubble.className = "bubble";
@@ -230,9 +232,6 @@
     </script>
 
     <script>
-        console.log("xinchao");
-        // const idOfSender = '[[${currentUser.id}]]';
-        // console.log("WARNING" + idOfSender);
 
         document.addEventListener("submit", function (e) {
             if (e.target && e.target.id === "messageForm") {
@@ -246,11 +245,10 @@
                 // thời gian 
                 // trạng thái (read or unread)
                 const msg = {
-                    sendBy: 1,
+                    sendBy: userId,
                     content: text,
                     conversationId: conversationId,
                     status: "unread",
-                    createdAt: new Date()
                 };
 
                 // Gửi lên backend qua endpoint "/send/chat"

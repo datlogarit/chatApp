@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -27,5 +29,11 @@ public class Conversations {
     private Users roomOwner;
 
     @Column(name = "created_at")
-    private Date createdAt;
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+
+    }
 }

@@ -18,23 +18,26 @@ import org.springframework.ui.Model;
 public class ListConversationController {
     private final ListConversationService conversationService;
 
-    @GetMapping("/chat")
-    public String chatPage() {
-        return "chat";
-    }
+    // @GetMapping("/chat")
+    // public String chatPage() {
+    // return "chat";
+    // }
 
-    @GetMapping("/chat/{conversationId}")
-    public String chatWithConversationPage(@PathVariable("conversationId") Integer conversationId, Model model) {
-        // Placeholder: thêm logic để lấy dữ liệu chat từ conversationId; sau sẽ bind từ
-        // service
-        // model.addAttribute("chatData", chatService.getChatData(conversationId));
-        return "chat_conversation";
-    }
+    // @GetMapping("/chat/{conversationId}")
+    // public String chatWithConversationPage(@PathVariable("conversationId")
+    // Integer conversationId, Model model) {
+    // // Placeholder: thêm logic để lấy dữ liệu chat từ conversationId; sau sẽ bind
+    // từ
+    // // service
+    // // model.addAttribute("chatData", chatService.getChatData(conversationId));
+    // return "chat_conversation";
+    // }
 
     @GetMapping("/chat/user/{userId}")
     public String chatList(@PathVariable("userId") Integer userId, Model model) {
         List<ConversationListDTO> conversations = conversationService.getListConversations(userId);
         // láy đc hết thông tin của trang listConversation ở đây để truyền vào cho view
+        model.addAttribute("userId", userId);
         model.addAttribute("conversations", conversations);
         return "chat";
     }
