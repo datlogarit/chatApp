@@ -1,5 +1,7 @@
 package com.example.chatApp.models;
 
+import java.sql.Timestamp;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +26,9 @@ public class Messages {
     @ManyToOne
     @JoinColumn(name = "conversation_id")
     private Conversations conversationId;
+
+    @Column(name = "created_at")
+    private Timestamp createdAt;
 
     private String status;
 }

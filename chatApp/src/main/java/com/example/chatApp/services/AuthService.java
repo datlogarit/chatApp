@@ -5,7 +5,6 @@ import com.example.chatApp.exceptions.UserAlreadyExistsException;
 import com.example.chatApp.models.Users;
 import com.example.chatApp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

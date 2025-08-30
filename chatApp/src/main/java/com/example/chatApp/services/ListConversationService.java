@@ -3,7 +3,6 @@ package com.example.chatApp.services;
 import java.util.List;
 
 import com.example.chatApp.DTOs.ConversationListDTO;
-import com.example.chatApp.models.MemberOfConversation;
 import com.example.chatApp.repositories.ConversationRepository;
 
 import org.springframework.stereotype.Service;

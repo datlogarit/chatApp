@@ -7,8 +7,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.example.chatApp.models.MemberOfConversation;
-
 import com.example.chatApp.services.ListConversationService;
 
 import lombok.RequiredArgsConstructor;
@@ -17,7 +15,7 @@ import org.springframework.ui.Model;
 
 @Controller
 @RequiredArgsConstructor
-public class ChatController {
+public class ListConversationController {
     private final ListConversationService conversationService;
 
     @GetMapping("/chat")

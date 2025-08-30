@@ -6,16 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
     <link rel="stylesheet" th:href="@{/css/chat.css}">
+    <!-- thư viện SockJS & STOMP để tạo kết nối websocket -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
-
-<!-- làm sao để kiểm tra conversation trong view -->
-<!-- nếu có conversation, gán thông tin conversation đó cho view -->
-<!-- nếu không có thì hiện thông báo  -->
 
 <body>
     <div class="chat-layout">
         <!-- Sidebar: Danh sách người dùng -->
-        <aside class="sidebar">
+        <aside id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-title">Tin nhắn</div>
             </div>
@@ -27,48 +26,56 @@
                     Bạn chưa có cuộc trò chuyện nào.
                 </li>
                 <!-- Ví dụ dữ liệu tĩnh; sau có thể bind từ server -->
-                <li th:unless="${#lists.isEmpty(conversations)}" class="user-item" th:each="c : ${conversations}"
-                    th:object="${c}">
-                    <div class="avatar" th:text="*{partnerUsername.substring(0,1).toUpperCase()}">A</div>
+                <li th:unless="${#lists.isEmpty(conversations)}" class="user-item"
+                    th:each="conversation : ${conversations}" th:data-id="${conversation.conversationId}">
+                    <div class="avatar" th:text="${conversation.partnerUsername.substring(0,1).toUpperCase()}">A</div>
                     <div class="user-meta">
-                        <div class="user-name" th:text="*{partnerUsername}">Tên</div>
-                        <div class="user-last" th:text="*{lastMessage}">Last message</div>
+                        <div class="user-name" th:text="${conversation.partnerUsername}">Tên</div>
+                        <div class="user-last" th:text="${conversation.lastMessage}">Last message</div>
                     </div>
-                    <div class="user-time" th:text="*{#temporals.format(lastMessageTime, 'HH:mm dd/MM')}">Time</div>
+                    <div class="user-time" th:text="${#temporals.format(conversation.lastMessageTime, 'HH:mm dd/MM')}">
+                        Time</div>
                 </li>
             </ul>
         </aside>
 
-        <!-- Khung chat -->
-        <main class="chat-panel">
-            <header class="chat-header">
-                <div class="avatar">A</div>
-                <div>
-                    <div class="chat-title">An Nguyen</div>
-                    <div style="font-size:12px;color:#9aa0a6;">Đang hoạt động</div>
+        <aside id="message-container">
+            <main id="chat-content">
+                <div id="welcome-message" th:if="${selectedConversationId }==null">
+                    Nhấn vào một cuộc trò chuyện để xem chi tiết
                 </div>
-            </header>
+            </main>
+            <!-- Khung chat -->
+            <!-- <main id="chat-panel" th:unless="${selectedConversationId }==null">
+                <header class="chat-header">
+                    <div class="avatar">A</div>
+                    <div>
+                        <div class="chat-title">An Nguyen</div>
+                        <div style="font-size:12px;color:#9aa0a6;">Đang hoạt động</div>
+                    </div>
+                </header>
 
-            <section id="messages" class="messages">
-                <!-- Tin nhắn mẫu -->
-                <div class="message other">
-                    <div class="bubble">Chào bạn!</div>
-                    <div class="time">09:40</div>
-                </div>
-                <div class="message me">
-                    <div class="bubble">Xin chào, hôm nay bạn thế nào?</div>
-                    <div class="time">09:41</div>
-                </div>
-            </section>
+                <section id="messages" class="messages">
+                    <div class="message other">
+                        <div class="bubble">Chào bạn!</div>
+                        <div class="time">09:40</div>
+                    </div>
+                    <div class="message me">
+                        <div class="bubble">Xin chào, hôm nay bạn thế nào?</div>
+                        <div class="time">09:41</div>
+                    </div>
+                </section>
 
-            <footer class="chat-input">
-                <form id="messageForm" class="message-form">
-                    <input id="messageInput" class="message-input" type="text" placeholder="Nhập tin nhắn..."
-                        autocomplete="off" />
-                    <button class="send-btn" type="submit">Gửi</button>
-                </form>
-            </footer>
-        </main>
+                <footer class="chat-input">
+                    <form id="messageForm" class="message-form">
+                        <input id="messageInput" class="message-input" type="text" placeholder="Nhập tin nhắn..."
+                            autocomplete="off" />
+                        <button class="send-btn" type="submit">Gửi</button>
+                    </form>
+                </footer>
+            </main> -->
+        </aside>
+
     </div>
 
     <script>
@@ -104,6 +111,155 @@
             messageInput.value = '';
             scrollToBottom();
         });
+    </script>
+
+    <script>
+        let conversationId = null;
+        // const chatPanel = document.getElementById("chat-panel");
+        const sidebar = document.getElementById("sidebar");
+        const messageContainer = document.getElementById("message-container");
+        const chatContent = document.getElementById("chat-content");
+
+        sidebar.addEventListener("click", async (event) => {
+            const targetConversation = event.target.closest("li");
+
+
+            if (targetConversation) {
+                const partnerName = targetConversation.querySelector(".user-name").textContent;
+                conversationId = targetConversation.getAttribute("data-id");
+                chatContent.innerHTML = '<div>Đang tải tin nhắn...</div>';
+                // fetch data and fill on UI
+                try {
+                    const response = await fetch(`http://localhost:8088/conversation/message/${conversationId}`)
+                    const messagesJson = await response.json();
+
+                    let chatHtml = `
+                    <header class="chat-header">
+                        <div class="avatar">${partnerName.substring(0, 1).toUpperCase()}</div>
+                        <div>
+                            <div class="chat-title">${partnerName}</div>
+                            <div style="font-size:12px;color:#9aa0a6;">Đang hoạt động</div>
+                        </div>
+                    </header>
+                    <section id="messages" class="messages">
+                    `;
+                    messagesJson.forEach(message => {
+                        const isMyMessage = message.sendBy.id === message.conversationId.roomOwner.id;
+                        const messageClass = isMyMessage ? 'me' : 'other';
+
+                        // Format thời gian tin nhắn
+                        const time = new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                        chatHtml += `
+                        <div class="message ${messageClass}">
+                            <div class="bubble">${message.content}</div>
+                            <div class="time">${time}</div>
+                        </div>
+                        `;
+                    });
+
+                    chatHtml += `
+                    </section>
+                    <footer class="chat-input">
+                        <form id="messageForm" class="message-form">
+                            <input id="messageInput" class="message-input" type="text" placeholder="Nhập tin nhắn..." autocomplete="off" />
+                            <button class="send-btn" type="submit">Gửi</button>
+                        </form>
+                    </footer>
+                    `;
+                    messageContainer.innerHTML = chatHtml;
+                } catch (error) {
+                    console.error("lỗi khi tải tin nhắn: " + error);
+                    chatContent.innerHTML = `<div>${error}</div>`;
+
+                }
+            }
+        })  
+    </script>
+
+    <script>
+
+        // 1. kết nối tới websocket
+        let stompClient = null;
+
+        function connect() {
+            const socket = new SockJS("http://localhost:8088/openws"); // port backend spring boot
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log("Connected: " + frame);
+
+                // Subscribe tới kênh public để nghe dữ liệu
+                stompClient.subscribe("/listen/public", function (messageOutput) {
+                    const msg = JSON.parse(messageOutput.body);
+                    appendMessage(msg);
+                    console.log("New message: ", msg.content);
+                });
+            });
+        }
+
+        window.addEventListener("load", connect);
+
+        // 2. gửi tin nhắn qua websocket
+
+    </script>
+
+    <script>
+        function appendMessage(msg) {
+            const messages = document.getElementById("messages");
+            if (!messages) return; // chưa mở phòng chat nào
+
+            const wrapper = document.createElement("div");
+            wrapper.className = msg.sender === "me" ? "message me" : "message other";
+
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            bubble.textContent = msg.content;
+
+            const time = document.createElement("div");
+            time.className = "time";
+            time.textContent = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            wrapper.appendChild(bubble);
+            wrapper.appendChild(time);
+            messages.appendChild(wrapper);
+
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+    </script>
+
+    <script>
+        console.log("xinchao");
+        // const idOfSender = '[[${currentUser.id}]]';
+        // console.log("WARNING" + idOfSender);
+
+        document.addEventListener("submit", function (e) {
+            if (e.target && e.target.id === "messageForm") {
+                e.preventDefault();
+                const messageInput = document.getElementById("messageInput");
+                const text = messageInput.value.trim();
+                if (!text) return;
+                //gửi lên id người gửi
+                // content
+                // idConversation
+                // thời gian 
+                // trạng thái (read or unread)
+                const msg = {
+                    sendBy: 1,
+                    content: text,
+                    conversationId: conversationId,
+                    status: "unread",
+                    createdAt: new Date()
+                };
+
+                // Gửi lên backend qua endpoint "/send/chat"
+                stompClient.send("/send/chat", {}, JSON.stringify(msg));
+
+                messageInput.value = "";
+            }
+        });
+
     </script>
 </body>
 
