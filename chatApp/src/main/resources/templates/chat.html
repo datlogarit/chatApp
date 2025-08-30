@@ -78,7 +78,7 @@
 
     </div>
 
-    <script>
+    <!-- <script>
         // Tự động cuộn xuống cuối vùng tin nhắn
         function scrollToBottom() {
             const list = document.getElementById('messages');
@@ -111,9 +111,14 @@
             messageInput.value = '';
             scrollToBottom();
         });
-    </script>
+    </script> -->
 
     <script>
+        function scrollToBottom() {
+            const list = document.getElementById('messages');
+            list.scrollTop = list.scrollHeight;
+        }
+
         let conversationId = null;
         let userId = document.querySelector("body").getAttribute("data-user-id");
 
@@ -175,6 +180,8 @@
                     chatContent.innerHTML = `<div>${error}</div>`;
 
                 }
+
+                scrollToBottom();
             }
         })  
     </script>
@@ -195,7 +202,7 @@
                 stompClient.subscribe("/listen/public", function (messageOutput) {
                     const msg = JSON.parse(messageOutput.body);
                     appendMessage(msg);
-                    console.log("New message: ", msg.content);
+                    updateSidebar(msg);
                 });
             });
         }
@@ -232,6 +239,49 @@
     </script>
 
     <script>
+        function updateSidebar(msg) {
+            const userList = document.querySelector(".user-list");
+            if (!userList) return;
+
+            // tìm conversation item theo conversationId
+            let item = userList.querySelector(`.user-item[data-id='${msg.conversationId}']`);
+
+            if (item) {
+                // cập nhật nội dung last message và time
+                item.querySelector(".user-last").textContent = msg.content;
+                item.querySelector(".user-time").textContent = new Date(msg.createdAt)
+                    .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                // đưa item lên đầu danh sách
+                userList.prepend(item);
+            } else {
+                // nếu chưa có thì tạo mới item
+                const newItem = document.createElement("li");
+                newItem.className = "user-item";
+                newItem.setAttribute("data-id", msg.conversationId);
+
+                // avatar = ký tự đầu tiên của sender
+                const avatar = msg.sendBy.username
+                    ? msg.sendBy.username.charAt(0).toUpperCase()
+                    : "?";
+
+                newItem.innerHTML = `
+            <div class="avatar">${avatar}</div>
+            <div class="user-meta">
+                <div class="user-name">${msg.sendBy.username || "Người dùng"}</div>
+                <div class="user-last">${msg.content}</div>
+            </div>
+            <div class="user-time">${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        `;
+
+                // thêm vào đầu danh sách
+                userList.prepend(newItem);
+            }
+        }
+
+    </script>
+
+    <script>
 
         document.addEventListener("submit", function (e) {
             if (e.target && e.target.id === "messageForm") {
@@ -239,11 +289,6 @@
                 const messageInput = document.getElementById("messageInput");
                 const text = messageInput.value.trim();
                 if (!text) return;
-                //gửi lên id người gửi
-                // content
-                // idConversation
-                // thời gian 
-                // trạng thái (read or unread)
                 const msg = {
                     sendBy: userId,
                     content: text,

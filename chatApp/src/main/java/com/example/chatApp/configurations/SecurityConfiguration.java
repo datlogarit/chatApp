@@ -1,5 +1,6 @@
 package com.example.chatApp.configurations;
 
+import com.example.chatApp.Custom.CustomAuthenticationSuccessHandler;
 import com.example.chatApp.exceptions.UserNotFoundException;
 import com.example.chatApp.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +20,12 @@ public class SecurityConfiguration {
         private final UserRepository userRepository;
 
         @Bean
-        public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        public SecurityFilterChain filterChain(HttpSecurity httpSecurity,
+                        CustomAuthenticationSuccessHandler successHandler) throws Exception {
                 httpSecurity
                                 .formLogin(form -> form
                                                 .loginPage("/login")
-                                                .defaultSuccessUrl("/friends", true)
+                                                .successHandler(successHandler)
                                                 .failureUrl("/login?error")
                                                 .permitAll())
                                 .logout(
