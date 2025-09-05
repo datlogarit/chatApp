@@ -22,7 +22,8 @@ public interface ConversationRepository extends JpaRepository<Conversations, Int
                             u.user_name AS partnerUsername,
                             m.id AS lastMessageId,
                             m.content AS lastMessage,
-                            m.created_at AS lastMessageTime
+                            m.created_at AS lastMessageTime,
+                            m.send_by AS lastMessageSendBy
                      FROM conversations c
                      JOIN conversation_members cm ON cm.conversation_id = c.id
                      JOIN conversation_members cm2 ON cm2.conversation_id = c.id

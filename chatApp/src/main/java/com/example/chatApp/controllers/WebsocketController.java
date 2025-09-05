@@ -2,7 +2,7 @@ package com.example.chatApp.controllers;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import com.example.chatApp.DTOs.MessageDTO;
@@ -15,14 +15,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebsocketController {
     private final MessageService messageService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/chat") // ánh xạ tin nhắn từ client đến pthuc xử lý
-    @SendTo("/listen/public") // kết quả trả về trên kênh này, nơi mà các user đang lắng nghe
-    public Messages sendMessage(@Payload MessageDTO chatMessage) {
+    @MessageMapping("/chat") // ánh xạ tin nhắn từ client đến phương thức xử lý
+    public void sendMessage(@Payload MessageDTO chatMessage) {
+        // lưu tin nhắn vào database
+        Messages savedMessage = messageService.createMessage(chatMessage);
 
-        // lưu tin nhắn
-        return messageService.createMessage(chatMessage);
-        // System.out.println(chatMessage.getContent());
+        // gửi tin nhắn đến kênh riêng của cuộc trò chuyện
+        String destination = "/listen/conversation/" + chatMessage.getConversationId();
+        messagingTemplate.convertAndSend(destination, savedMessage);
+        messagingTemplate.convertAndSend("/listen/sidebar", savedMessage);
     }
 
 }
